@@ -5,6 +5,8 @@ import config from "../../config";
 
 const signup = async (payload: Record<string, unknown>) => {
   const { name, email, password, phone, role } = payload;
+
+
   const hasPassword = await bcrypt.hash(password as string, 10);
   const query = `INSERT INTO users(name, email, password, phone, role) VALUES($1,$2,$3,$4,$5) RETURNING id, name, email, phone, role`;
   const result = await pool.query(query, [
@@ -20,7 +22,6 @@ const signup = async (payload: Record<string, unknown>) => {
 const signin = async (email: string, password: string) => {
   const query = `SELECT * FROM users WHERE email=$1`;
   const result = await pool.query(query, [email]);
-
   if (result.rows.length == 0) {
     return { success: false, message: "User not found" };
   }
