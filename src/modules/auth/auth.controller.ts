@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { userService } from "./user.service";
+import { authService } from "./auth.service";
 
 const signup = async(req:Request, res:Response)=>{
     try {
-        const result = await userService.signup(req.body);
+        const result = await authService.signup(req.body);
         return res.status(201).json({
             success:true,
             message:"User registered successfully",
@@ -20,12 +20,26 @@ const signup = async(req:Request, res:Response)=>{
 
 const signin = async(req:Request, res:Response)=>{
     try {
-        const result = await userService.signup(req.body);
-        return res.status(201).json({
+        const {email, password} = req.body
+    
+        const result = await authService.signin(email,password);
+        if(!result.success){
+            return res.status(404).json({
+                success:false,
+                message:result.message
+            })
+        }
+
+
+        return res.status(200).json({
             success:true,
-            message:"User registered successfully",
-            data:result.rows[0]
+            message: "Login successful",
+            data:{
+                token:result.jwtToken,
+                user:result.user,
+            }, 
         })
+        
     } catch (error:any) {
         console.log(error);
         return res.status(500).json({
@@ -35,7 +49,7 @@ const signin = async(req:Request, res:Response)=>{
     }
 }
 
-export const userController = {
+export const authController = {
     signup,
     signin
 }
