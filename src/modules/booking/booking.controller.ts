@@ -33,8 +33,14 @@ const getAllBookings = async (req: Request, res: Response) => {
         id: item.id,
         customer_id: item.customer_id,
         vehicle_id: item.vehicle_id,
-        rent_start_date: new Date(item.rent_start_date).toLocaleDateString("en-CA", {timeZone: "Asia/Dhaka",}),
-        rent_end_date: new Date(item.rent_end_date).toLocaleDateString("en-CA", {timeZone: "Asia/Dhaka",}),
+        rent_start_date: new Date(item.rent_start_date).toLocaleDateString(
+          "en-CA",
+          { timeZone: "Asia/Dhaka" },
+        ),
+        rent_end_date: new Date(item.rent_end_date).toLocaleDateString(
+          "en-CA",
+          { timeZone: "Asia/Dhaka" },
+        ),
         total_price: item.total_price,
         status: item.status,
         customer: {
@@ -57,8 +63,14 @@ const getAllBookings = async (req: Request, res: Response) => {
         id: item.id,
         customer_id: item.customer_id,
         vehicle_id: item.vehicle_id,
-        rent_start_date: new Date(item.rent_start_date).toLocaleDateString("en-CA", {timeZone: "Asia/Dhaka",}),
-        rent_end_date: new Date(item.rent_end_date).toLocaleDateString("en-CA", {timeZone: "Asia/Dhaka",}),
+        rent_start_date: new Date(item.rent_start_date).toLocaleDateString(
+          "en-CA",
+          { timeZone: "Asia/Dhaka" },
+        ),
+        rent_end_date: new Date(item.rent_end_date).toLocaleDateString(
+          "en-CA",
+          { timeZone: "Asia/Dhaka" },
+        ),
         total_price: item.total_price,
         status: item.status,
         vehicle: {
@@ -82,7 +94,24 @@ const getAllBookings = async (req: Request, res: Response) => {
   }
 };
 
+const updateBooking = async (req: Request, res: Response) => {
+  try {
+    const result = await bookingService.updateBooking(req.body, req.user as JwtPayload, req.params.bookingId as string);
+    res.status(200).json({
+        success:true,
+        message:"Booking marked as returned. Vehicle is now available",
+        data:result
+    })
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export const bookingController = {
   createBooking,
   getAllBookings,
+  updateBooking
 };

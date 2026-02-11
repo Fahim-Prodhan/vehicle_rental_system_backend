@@ -72,7 +72,7 @@ const getAllBookings = async (loggedInUser: JwtPayload) => {
   `;
     const result = await pool.query(query);
     return result;
-  }else if(loggedInUser.role == 'customer'){
+  } else if (loggedInUser.role == "customer") {
     const query = `SELECT 
                     b.id,
                     b.customer_id,
@@ -91,12 +91,68 @@ const getAllBookings = async (loggedInUser: JwtPayload) => {
                     WHERE customer_id=$1
                     ORDER BY b.id;
   `;
-    const result = await pool.query(query,[loggedInUser.id]);
+    const result = await pool.query(query, [loggedInUser.id]);
     return result;
   }
+};
+
+const updateBooking = async (
+  payload: Record<string, unknown>,
+  loggedInUser: JwtPayload,
+  bookingId: string,
+) => {
+  const bookingResult = await pool.query(
+    `SELECT * FROM bookings WHERE id = $1`,
+    [bookingId],
+  );
+
+  if (bookingResult.rowCount === 0) {
+    throw new Error("Booking not found");
+  }
+
+  const booking = bookingResult.rows[0];
+
+  if (loggedInUser.role === "admin" && payload.status === "returned") {
+    const updatedBooking = await pool.query(
+      `UPDATE bookings SET status=$1 WHERE id=$2 RETURNING id,customer_id,vehicle_id,rent_start_date,rent_end_date,total_price,status`,
+      [payload.status, bookingId],
+    );
+    const vehicleId = updatedBooking.rows[0].vehicle_id;
+    const updatedVehicle = await pool.query(`UPDATE vehicles SET availability_status=$1 WHERE id=$2 RETURNING availability_status`, [
+      "available",
+      vehicleId
+    ]);
+
+    const result = {...updatedBooking.rows[0], vehicle:updatedVehicle.rows[0]}
+
+    return result;
+  }
+
+  if (loggedInUser.role === "customer" && payload.status === "cancelled") {
+    // Ownership check
+    if (booking.customer_id !== loggedInUser.id) {
+      throw new Error("Unauthorized action");
+    }
+
+    const today = new Date();
+    const startDate = new Date(booking.rent_start_date);
+
+    if (today >= startDate) {
+      throw new Error("Cannot cancel after booking has started");
+    }
+
+    const updatedBooking = await pool.query(
+      `UPDATE bookings SET status=$1 WHERE id=$2 RETURNING id,customer_id,vehicle_id,rent_start_date,rent_end_date,total_price,status`, [payload.status, bookingId],
+    );
+
+    return updatedBooking.rows[0];
+  }
+
+  throw new Error("Invalid status update");
 };
 
 export const bookingService = {
   createBooking,
   getAllBookings,
+  updateBooking
 };
