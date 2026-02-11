@@ -2,7 +2,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { pool } from "../../config/db";
 
 const getAllUsers = async () => {
-    const query = `SELECT id,name, email,phone,role FROM users`;
+    const query = `SELECT id,name, email,phone,role FROM users ORDER BY id`;
     return await pool.query(query);
 };
 

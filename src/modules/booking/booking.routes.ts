@@ -5,5 +5,6 @@ import authChecker from "../../middleware/authChecker";
 const router = Router();
 
 router.post('/',authChecker('admin', 'customer'), bookingController.createBooking)
+router.get('/',authChecker('admin', 'customer'), bookingController.getAllBookings)
 
 export const bookingRoutes = router;
