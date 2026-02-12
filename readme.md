@@ -60,6 +60,7 @@ git clone <repository-url>
 cd vehicle_rental_system_backend
 npm install
 
+.env file
 PORT=5000
 DATABASE_URL=your_postgresql_connection_string
 JWT_SECRET=your_secret_key
