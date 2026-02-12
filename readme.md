@@ -1,6 +1,6 @@
 # 🚗 Smart Vehicle Rental System
 
-**Live URL:** http:........
+**Live URL:** https://vehicle-rental-system-delta-seven.vercel.app
 
 Smart Vehicle Rental System is a backend REST API for managing a vehicle rental business.  
 It provides secure role-based access control and handles vehicles, customers, and bookings efficiently.
