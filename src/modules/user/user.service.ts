@@ -2,42 +2,55 @@ import { JwtPayload } from "jsonwebtoken";
 import { pool } from "../../config/db";
 
 const getAllUsers = async () => {
-    const query = `SELECT id,name, email,phone,role FROM users ORDER BY id`;
-    return await pool.query(query);
+  const query = `SELECT id,name, email,phone,role FROM users ORDER BY id`;
+  return await pool.query(query);
 };
 
 const updateUser = async (
-    userId: string,
-    loggedInUser:JwtPayload | undefined,
-    payload: Record<string, unknown>,
+  userId: string,
+  loggedInUser: JwtPayload | undefined,
+  payload: Record<string, unknown>,
 ) => {
-    
-    if (loggedInUser?.role == "customer" && loggedInUser?.id != userId) {
-        throw new Error("You can update only your own profile");
-    }
-    if (loggedInUser?.role == "customer" && payload.role) {
-        throw new Error("You have no access to change the role");
-    }
+  if (loggedInUser?.role == "customer" && loggedInUser?.id != userId) {
+    throw new Error("You can update only your own profile");
+  }
+  if (loggedInUser?.role == "customer" && payload.role) {
+    throw new Error("You have no access to change the role");
+  }
 
-    const query = `UPDATE users SET 
+  const query = `UPDATE users SET 
                 name = COALESCE($1, name),
                 email = COALESCE($2, email),
                 phone = COALESCE($3, phone),
                 role = COALESCE($4, role)
                 WHERE id=$5 RETURNING id, name, email, phone, role`;
 
-    const result = await pool.query(query,[payload?.name, payload?.email, payload?.phone, payload?.role, userId])
-    return result;
+  const result = await pool.query(query, [
+    payload?.name,
+    payload?.email,
+    payload?.phone,
+    payload?.role,
+    userId,
+  ]);
+  return result;
 };
 
-const deleteUser = async(userId:string)=>{
-    const query = `DELETE FROM users WHERE id=$1`;
-    const result = await pool.query(query,[userId]);
-    return result 
-}
+const deleteUser = async (userId: string) => {
+  const userWithActiveBooking = await pool.query(` SELECT 1 
+      FROM bookings 
+      WHERE customer_id = $1 AND status = 'active'
+      LIMIT 1`,[userId]);
+
+  if(userWithActiveBooking.rowCount as number > 0){
+    throw new Error("User has active booking can be deleted!")
+  }    
+  const query = `DELETE FROM users WHERE id=$1`;
+  const result = await pool.query(query, [userId]);
+  return result;
+};
 
 export const userServices = {
-    getAllUsers,
-    updateUser,
-    deleteUser
+  getAllUsers,
+  updateUser,
+  deleteUser,
 };

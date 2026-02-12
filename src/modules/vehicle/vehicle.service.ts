@@ -66,6 +66,7 @@ const deleteVehicle = async(vehicleId:string)=>{
     `;
     const bookingResult = await pool.query(bookingCheckQuery, [vehicleId]);
 
+
     if (bookingResult.rows.length > 0) {
       throw new Error("Vehicle has active bookings and cannot be deleted");
     }

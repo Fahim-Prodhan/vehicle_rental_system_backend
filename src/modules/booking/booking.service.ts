@@ -30,7 +30,6 @@ const createBooking = async (payload: Record<string, unknown>) => {
     payload.vehicle_id,
   ]);
 
-  console.log(vehicle);
 
   const dailyPrice = vehicle.rows[0].daily_rent_price;
 
